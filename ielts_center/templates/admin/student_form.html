@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if student else 'Thêm' }} hồ sơ học viên{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="page-title">{{ 'Cập nhật hồ sơ học viên' if student else 'Thêm hồ sơ học viên' }}</h4>
+    <p class="page-sub mb-3">
+      Band điểm kiểm tra đầu vào là bắt buộc trước khi xếp lớp.
+    </p>
+
+    <div class="card">
+      <div class="card-body">
+        <form method="post" novalidate>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+              <input name="full_name" class="form-control" required value="{{ student.full_name if student else '' }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Mã học viên</label>
+              <input name="code" class="form-control" value="{{ student.code if student else '' }}" placeholder="HV001">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Band đầu vào</label>
+              <input name="entry_band" type="number" step="0.5" min="0" max="9" class="form-control"
+                     value="{{ student.entry_band if student else '' }}">
+            </div>
+            {% if not student %}
+            <div class="col-md-6">
+              <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+              <input name="username" class="form-control" required placeholder="hv.an">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Mật khẩu</label>
+              <input name="password" class="form-control" placeholder="mặc định 123456">
+            </div>
+            {% endif %}
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input name="email" type="email" class="form-control" value="{{ student.user.email if student else '' }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Số điện thoại</label>
+              <input name="phone" class="form-control" value="{{ student.user.phone if student else '' }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Ngày sinh</label>
+              <input name="dob" type="date" class="form-control"
+                     value="{{ student.dob.isoformat() if student and student.dob else '' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Địa chỉ</label>
+              <input name="address" class="form-control" value="{{ student.address if student else '' }}">
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <button class="btn btn-primary" style="background:var(--brand);border:none"><i class="bi bi-check-lg"></i> Lưu hồ sơ</button>
+          <a href="{{ url_for('admin.students') }}" class="btn btn-light">Hủy</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

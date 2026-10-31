@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Nhập điểm lớp {{ classroom.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title mb-1">Nhập điểm · Lớp {{ classroom.code }}</h4>
+    <p class="page-sub mb-0">
+      Band Overall được tính tự động = trung bình 4 kỹ năng, làm tròn theo quy tắc IELTS (.25 → .5, .75 → lên 1 band).
+    </p>
+  </div>
+  <a href="{{ url_for('teacher.class_detail', class_id=classroom.id) }}" class="btn btn-light">← Về lớp</a>
+</div>
+
+<div class="card mb-3">
+  <div class="card-body py-3 d-flex align-items-center gap-3 flex-wrap">
+    <form method="get" class="d-flex align-items-center gap-2">
+      <label class="form-label mb-0 small text-muted">Kỳ đánh giá:</label>
+      <select name="term" class="form-select form-select-sm" onchange="this.form.submit()" style="width:auto">
+        {% for t in terms %}<option value="{{ t }}" {% if t == term %}selected{% endif %}>{{ t }}</option>{% endfor %}
+      </select>
+    </form>
+    <span class="text-muted small ms-auto">
+      Ô nền xám là điểm đã chốt — cần quản trị viên mở khóa mới sửa được.
+    </span>
+  </div>
+</div>
+
+<form method="post">
+  <input type="hidden" name="term" value="{{ term }}">
+  <div class="card">
+    <div class="card-header"><i class="bi bi-pencil-square"></i> Bảng điểm kỳ {{ term }}</div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr>
+            <th style="min-width:170px">Học viên</th>
+            {% for key, label in skills %}<th style="width:110px">{{ label }}</th>{% endfor %}
+            <th style="width:90px">Overall</th>
+            <th style="min-width:220px">Nhận xét</th>
+            <th style="width:110px">Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for e in active_enrollments %}
+          {% set record = records[e.id] %}
+          {% set locked = record and record.is_published %}
+          <tr data-score-row>
+            <td>
+              <div class="fw-semibold">{{ e.student.full_name }}</div>
+              <div class="uc-tag">{{ e.student.code or '' }} · đầu vào {{ e.student.entry_band or '—' }}</div>
+            </td>
+            {% for key, label in skills %}
+              <td>
+                <input type="number" step="0.5" min="0" max="9"
+                       class="form-control form-control-sm skill-input"
+                       name="e{{ e.id }}_{{ key }}"
+                       value="{{ record[key] if record and record[key] is not none else '' }}"
+                       {% if locked %}readonly style="background:#eceff3"{% endif %}>
+              </td>
+            {% endfor %}
+            <td><span class="band-pill overall-preview none">—</span></td>
+            <td>
+              <input type="text" class="form-control form-control-sm"
+                     name="e{{ e.id }}_comment"
+                     value="{{ record.comment if record and record.comment else '' }}"
+                     placeholder="Nhận xét cho học viên..."
+                     {% if locked %}readonly style="background:#eceff3"{% endif %}>
+            </td>
+            <td>
+              {% if locked %}<span class="badge bg-success">Đã chốt</span>
+              {% elif record %}<span class="badge bg-warning text-dark">Đang nhập</span>
+              {% else %}<span class="badge bg-light text-dark border">Chưa có</span>{% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="8" class="text-center text-muted py-4">Lớp chưa có học viên.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if active_enrollments %}
+    <div class="card-body border-top d-flex gap-2 flex-wrap">
+      <button class="btn btn-primary" style="background:var(--brand);border:none">
+        <i class="bi bi-save"></i> Lưu điểm (chưa công bố)
+      </button>
+      <button type="submit" form="publish-form" class="btn btn-success">
+        <i class="bi bi-send-check"></i> Chốt và công bố kết quả
+      </button>
+      <a href="{{ url_for('teacher.export_scores', class_id=classroom.id) }}" class="btn btn-outline-secondary ms-auto">
+        <i class="bi bi-download"></i> Xuất bảng điểm CSV
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</form>
+
+<form method="post" id="publish-form" action="{{ url_for('teacher.publish_scores', class_id=classroom.id) }}"
+      data-confirm="Chốt và công bố kết quả kỳ {{ term }}? Sau khi công bố bạn sẽ không sửa được điểm nữa.">
+  <input type="hidden" name="term" value="{{ term }}">
+</form>
+{% endblock %}

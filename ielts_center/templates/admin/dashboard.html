@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Tổng quan · Quản trị viên{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Tổng quan hệ thống</h4>
+<p class="page-sub mb-4">Xin chào {{ current_user.full_name }}, đây là tình hình đào tạo hiện tại của trung tâm.</p>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.open_courses }}/{{ stats.courses }}</div>
+      <div class="stat-label">Khóa đang tuyển sinh</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card green">
+      <div class="stat-value">{{ stats.teaching_classes }}</div>
+      <div class="stat-label">Lớp đang hoạt động</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card accent">
+      <div class="stat-value">{{ stats.students }}</div>
+      <div class="stat-label">Học viên</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ stats.teachers }}</div>
+      <div class="stat-label">Giáo viên</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-exclamation-triangle text-warning"></i> Việc cần xử lý</div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            Lớp chưa phân công giáo viên
+            <span class="badge bg-{{ 'danger' if unassigned else 'secondary' }} rounded-pill">{{ unassigned|length }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            Yêu cầu đặt lại mật khẩu chờ duyệt
+            <span class="badge bg-{{ 'warning text-dark' if pending_resets else 'secondary' }} rounded-pill">{{ pending_resets }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            Tài khoản đang bị khóa
+            <span class="badge bg-{{ 'danger' if stats.locked_users else 'secondary' }} rounded-pill">{{ stats.locked_users }}</span>
+          </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+            Lượt ghi danh đang học
+            <span class="badge bg-success rounded-pill">{{ stats.enrollments }}</span>
+          </li>
+        </ul>
+
+        {% if unassigned %}
+          <div class="alert alert-warning mt-3 mb-0 py-2 small">
+            Cần phân công giáo viên cho:
+            {% for c in unassigned %}
+              <a href="{{ url_for('admin.class_form', class_id=c.id) }}" class="fw-semibold">{{ c.code }}</a>{% if not loop.last %}, {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-clock-history"></i> Lớp mới nhất</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Mã lớp</th><th>Khóa học</th><th>Sĩ số</th></tr></thead>
+          <tbody>
+          {% for c in recent_classes %}
+            <tr>
+              <td><a href="{{ url_for('admin.class_detail', class_id=c.id) }}" class="fw-semibold text-decoration-none">{{ c.code }}</a></td>
+              <td class="small">{{ c.course.name }}</td>
+              <td>{{ c.current_size }}/{{ c.max_size }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-3">Chưa có lớp nào</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

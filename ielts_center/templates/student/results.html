@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Kết quả và tiến độ học tập{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title">Kết quả và tiến độ học tập</h4>
+    <p class="page-sub mb-0">Chỉ hiển thị các kỳ đánh giá đã được giáo viên chốt và công bố.</p>
+  </div>
+  <a href="{{ url_for('student.export_transcript') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-download"></i> Tải bảng điểm
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ entry_band if entry_band is not none else '—' }}</div>
+      <div class="stat-label">Band đầu vào</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card accent">
+      <div class="stat-value">{{ published[-1][1].overall if published else '—' }}</div>
+      <div class="stat-label">Band gần nhất</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card green">
+      <div class="stat-value">{% if improvement is not none %}{{ '+' if improvement > 0 else '' }}{{ improvement }}{% else %}—{% endif %}</div>
+      <div class="stat-label">Mức tiến bộ</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ published|length }}</div>
+      <div class="stat-label">Kỳ đã đánh giá</div>
+    </div>
+  </div>
+</div>
+
+{% if published %}
+<div class="card mb-3">
+  <div class="card-header"><i class="bi bi-graph-up-arrow"></i> Biểu đồ tiến bộ band điểm</div>
+  <div class="card-body">
+    <canvas id="progressChart" height="90"></canvas>
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header"><i class="bi bi-table"></i> Chi tiết điểm từng kỹ năng</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Lớp</th><th>Kỳ</th>
+            {% for key, label in skills %}<th>{{ label }}</th>{% endfor %}
+            <th>Overall</th><th>Nhận xét của giáo viên</th></tr>
+      </thead>
+      <tbody>
+      {% for enrollment, record in published %}
+        <tr>
+          <td class="fw-semibold">{{ enrollment.classroom.code }}</td>
+          <td>{{ record.term }}</td>
+          {% for key, label in skills %}<td>{{ record[key] if record[key] is not none else '—' }}</td>{% endfor %}
+          <td><span class="band-pill high">{{ record.overall }}</span></td>
+          <td class="small text-muted">{{ record.comment or '—' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">Chưa có kết quả nào được công bố.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if published %}
+<script>
+  const ctx = document.getElementById('progressChart');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: {{ chart_labels | tojson }},
+      datasets: [
+        { label: 'Listening', data: {{ chart_data.listening | tojson }}, borderColor: '#0f4c81', tension: .3 },
+        { label: 'Reading',   data: {{ chart_data.reading | tojson }},   borderColor: '#2e9e6b', tension: .3 },
+        { label: 'Writing',   data: {{ chart_data.writing | tojson }},   borderColor: '#e8833a', tension: .3 },
+        { label: 'Speaking',  data: {{ chart_data.speaking | tojson }},  borderColor: '#8e6bbf', tension: .3 },
+        { label: 'Overall',   data: {{ chart_data.overall | tojson }},   borderColor: '#d1495b',
+          borderWidth: 3, borderDash: [6, 4], tension: .3 }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { min: 0, max: 9, ticks: { stepSize: 0.5 } } },
+      plugins: { legend: { position: 'bottom' } }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

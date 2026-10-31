@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Trang chủ học viên{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Xin chào {{ current_user.full_name }}</h4>
+<p class="page-sub mb-4">Đây là thông tin lớp học và kết quả học tập của bạn.</p>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ profile.entry_band if profile and profile.entry_band else '—' }}</div>
+      <div class="stat-label">Band đầu vào</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card accent">
+      <div class="stat-value">{{ latest.overall if latest else '—' }}</div>
+      <div class="stat-label">Band mới nhất</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card green">
+      <div class="stat-value">{{ studying|length }}</div>
+      <div class="stat-label">Lớp đang học</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ enrollments|length }}</div>
+      <div class="stat-label">Tổng số lớp đã tham gia</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+{% for e in enrollments %}
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>{{ e.classroom.code }}</span>
+        <span class="badge bg-secondary">{{ e.status_label }}</span>
+      </div>
+      <div class="card-body">
+        <h6 class="mb-1">{{ e.classroom.course.name }}</h6>
+        <p class="small text-muted mb-3">
+          Mục tiêu band {{ e.classroom.course.target_band }} · {{ e.classroom.course.sessions }} buổi
+        </p>
+        <dl class="row small mb-3">
+          <dt class="col-4 text-muted">Giáo viên</dt>
+          <dd class="col-8">{{ e.classroom.teacher.full_name if e.classroom.teacher else 'Chưa phân công' }}</dd>
+          <dt class="col-4 text-muted">Lịch học</dt><dd class="col-8">{{ e.classroom.schedule_display }}</dd>
+          <dt class="col-4 text-muted">Phòng</dt><dd class="col-8">{{ e.classroom.room or '—' }}</dd>
+        </dl>
+        {% if e.status != 'stopped' %}
+          <a href="{{ url_for('student.class_detail', class_id=e.class_id) }}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-info-circle"></i> Chi tiết lớp
+          </a>
+        {% else %}
+          <span class="small text-muted">Lịch sử lớp học</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="col-12">
+    <div class="alert alert-info">
+      Bạn chưa được xếp lớp. Xem <a href="{{ url_for('student.courses') }}">các khóa học đang mở</a> và liên hệ trung tâm để ghi danh.
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

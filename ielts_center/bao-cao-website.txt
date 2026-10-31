@@ -1,0 +1,159 @@
+BÁO CÁO WEBSITE QUẢN LÝ TRUNG TÂM IELTS
+=======================================
+
+1. Mục đích và phạm vi
+----------------------
+Website là ứng dụng quản lý đào tạo cho một trung tâm IELTS, gồm ba vai trò:
+Quản trị viên, Giáo viên và Học viên. Các chức năng tập trung vào quản lý khóa
+học, lớp, lịch học, hồ sơ, ghi danh và kết quả IELTS.
+
+Báo cáo này mô tả các chức năng đang có trong mã nguồn và README. Website hiện
+là ứng dụng web phục vụ quản lý và theo dõi học tập; không nên hiểu là một hệ
+thống quản trị trung tâm đầy đủ mọi nghiệp vụ.
+
+2. Công nghệ và cách vận hành
+-----------------------------
+- Backend: Python và Flask; các nhóm route được tách thành blueprint.
+- Dữ liệu: SQLite, truy cập qua Flask-SQLAlchemy.
+- Giao diện: Jinja2, HTML, CSS, JavaScript và Bootstrap 5.
+- Biểu đồ kết quả học tập: Chart.js.
+- Đăng nhập: Flask-Login; mật khẩu được băm bằng Werkzeug.
+- Bootstrap, Bootstrap Icons và Chart.js được lưu trong static/vendor, nên các
+  thư viện giao diện này không cần tải từ Internet khi chạy.
+- Có script seed.py tạo dữ liệu mẫu và tests_smoke.py để kiểm thử các luồng chính.
+
+3. Chức năng dùng chung
+-----------------------
+- Đăng nhập và điều hướng đến trang chủ theo vai trò; đăng xuất.
+- Đổi mật khẩu khi đã đăng nhập.
+- Gửi yêu cầu quên mật khẩu bằng tên đăng nhập và email. Yêu cầu được lưu để
+  quản trị viên xử lý, không có quy trình gửi email tự động.
+- Tài khoản không phải quản trị viên có thể bị khóa sau 5 lần nhập sai mật khẩu.
+  Quản trị viên có thể khóa/mở tài khoản và đặt lại mật khẩu.
+- Các trang lỗi 403 và 404 được cung cấp cho truy cập không được phép hoặc
+  không tìm thấy tài nguyên.
+- Giao diện có điều hướng theo vai trò, thông báo thao tác, lọc nhanh một số
+  bảng và hộp xác nhận cho các thao tác được gắn xác nhận.
+
+4. Chức năng theo vai trò
+-------------------------
+
+4.1. Quản trị viên
+- Trang tổng quan hiển thị các số liệu như khóa học, lớp, giáo viên, học viên,
+  ghi danh, tài khoản bị khóa, yêu cầu đặt lại mật khẩu và lớp chưa có giáo viên.
+- Khóa học: xem/tìm theo mã hoặc tên, tạo, sửa và bật/tắt tuyển sinh.
+- Lớp học: xem và lọc theo trạng thái; tạo, sửa, xem chi tiết, gán giáo viên,
+  chọn khóa học, phòng học, ngày khai giảng và sĩ số tối đa; thay đổi trạng thái.
+  Lớp chỉ được xóa khi không còn học viên đang học/bảo lưu và không có lịch sử điểm.
+- Lịch học: thêm, sửa, xóa buổi học; kiểm tra giờ bắt đầu-kết thúc, lịch trùng
+  trong cùng lớp, lịch giáo viên và sử dụng trùng phòng giữa các lớp.
+- Giáo viên: xem/tìm kiếm, tạo hồ sơ kèm tài khoản, cập nhật hồ sơ và bật/tắt
+  hoạt động. Không thể ngừng giáo viên khi vẫn còn lớp đang mở hoặc đang dạy.
+- Học viên: xem/tìm theo họ tên, tên đăng nhập hoặc mã học viên; tạo hồ sơ kèm
+  tài khoản, cập nhật thông tin, xem chi tiết và ghi danh vào lớp.
+- Ghi danh: kiểm tra band đầu vào, sĩ số lớp và trạng thái lớp; cập nhật trạng
+  thái học viên như đang học, bảo lưu, hoàn thành hoặc đã nghỉ. Xóa học viên
+  khỏi lớp được thực hiện bằng trạng thái đã nghỉ để giữ lịch sử.
+- Tài khoản: tạo tài khoản, lọc theo vai trò, gán vai trò, khóa/mở, đặt lại mật
+  khẩu và xem các yêu cầu quên mật khẩu chưa xử lý. Đặt lại mật khẩu đồng thời
+  đánh dấu các yêu cầu của tài khoản đó là đã xử lý.
+- Kết quả: xem tối đa 100 điểm đã công bố gần đây và 30 dòng nhật ký gần đây;
+  mở khóa điểm đã chốt để giáo viên có thể sửa.
+
+4.2. Giáo viên
+- Trang tổng quan liệt kê các lớp được phân công, tổng số học viên và số trường
+  hợp chưa có kết quả công bố.
+- Xem thời khóa biểu cá nhân theo thứ; các lớp đã hủy/kết thúc không hiện trong
+  lịch dạy.
+- Xem danh sách học viên của lớp, band đầu vào, các kết quả công bố và thống kê
+  điểm trung bình kỹ năng/Overall của lớp.
+- Xem điểm đã công bố của từng học viên trong lớp mình phụ trách.
+- Nhập hoặc sửa điểm theo kỳ cho 4 kỹ năng Listening, Reading, Writing,
+  Speaking; nhập nhận xét; hệ thống tính Overall và ghi nhật ký thay đổi điểm.
+- Điểm hợp lệ nằm trong khoảng 0.0-9.0 và theo bước 0.5. Khi điểm đã công bố,
+  giáo viên không thể sửa cho đến khi quản trị viên mở khóa.
+- Chốt và công bố điểm cho học viên đã có đủ điểm; học viên chỉ xem được kết
+  quả đã công bố.
+- Tải bảng điểm lớp dạng CSV, có thể mở bằng các ứng dụng bảng tính thông dụng.
+
+4.3. Học viên
+- Trang cá nhân tổng hợp các lớp ghi danh, lớp đang học và kết quả gần nhất
+  theo logic hiện tại của ứng dụng.
+- Xem các khóa học đang mở cùng band đầu vào, band mục tiêu, số buổi và học phí.
+- Xem chi tiết lớp mình có ghi danh (trừ ghi danh đã nghỉ), gồm giáo viên,
+  phòng và thời khóa biểu.
+- Xem điểm từng kỹ năng, Overall và nhận xét của giáo viên; chỉ các điểm đã
+  công bố mới được hiển thị.
+- Xem biểu đồ Chart.js theo các kỳ đã công bố, có band đầu vào làm mốc so sánh.
+- Tải bảng điểm cá nhân dạng CSV; file chỉ gồm các điểm đã công bố.
+
+5. Quy tắc nghiệp vụ và dữ liệu
+-------------------------------
+- Overall là trung bình bốn kỹ năng và được làm tròn theo quy tắc band IELTS:
+  phần lẻ nhỏ hơn .25 làm tròn xuống, từ .25 đến nhỏ hơn .75 thành .5, còn lại
+  làm tròn lên band tiếp theo.
+- Điểm kỹ năng nhận các giá trị từ 0.0 đến 9.0 theo bước 0.5.
+- Band mục tiêu của khóa học phải cao hơn band đầu vào.
+- Khi xếp lớp, học viên cần có band đầu vào; lớp phải còn chỗ và chưa đóng/hủy;
+  band đầu vào phải đạt mức tối thiểu của khóa học.
+- Kiểm tra lịch học có xét trùng giờ của lớp, giáo viên và phòng học.
+- Giáo viên chỉ truy cập được các lớp được phân công; học viên chỉ xem dữ liệu
+  ghi danh và kết quả của mình; khu vực quản trị yêu cầu vai trò quản trị viên.
+- Hồ sơ giáo viên/học viên được lưu lại bằng trạng thái hoạt động thay vì xóa
+  trực tiếp trong các luồng quản lý thông thường.
+- Các lần nhập/sửa, chốt và mở khóa điểm tạo bản ghi ScoreLog, có thông tin
+  người thao tác, thời điểm, giá trị cũ/mới và hành động.
+
+Dữ liệu được tổ chức quanh tài khoản và hồ sơ, khóa học, lớp, lịch học, ghi danh,
+kết quả, nhật ký điểm và yêu cầu đặt lại mật khẩu. Database SQLite được tạo khi
+ứng dụng khởi động; seed.py cung cấp bộ dữ liệu để trình diễn.
+
+6. Điểm mạnh
+------------
+- Phân chia rõ các luồng theo ba vai trò; một số ràng buộc quyền được kiểm tra
+  ở phía server, không chỉ ẩn/hiện nút trên giao diện.
+- Bao phủ được chu trình quản lý đào tạo cơ bản: khóa học, lớp, lịch, hồ sơ,
+  ghi danh và theo dõi điểm.
+- Có các kiểm tra dữ liệu thực tế cho band, sĩ số, trạng thái lớp và xung đột
+  lịch, giúp hạn chế một số lỗi thao tác.
+- Điểm có luồng công bố/mở khóa và nhật ký, hỗ trợ đối chiếu thay đổi.
+- Học viên không thấy điểm chưa công bố; giáo viên được giới hạn theo lớp phụ
+  trách.
+- Có CSV để tải kết quả và biểu đồ để học viên theo dõi band theo thời gian.
+- Các thư viện giao diện chính được đóng gói cùng ứng dụng, thuận tiện cho demo
+  không có Internet.
+- Có dữ liệu mẫu và script smoke test để hỗ trợ khởi động, trình diễn và kiểm
+  thử nhanh các luồng.
+
+7. Hạn chế và phạm vi chưa bao phủ
+----------------------------------
+- Ứng dụng chưa có các nghiệp vụ như thu học phí/thanh toán, điểm danh, quản lý
+  bài tập/tài liệu, lớp học trực tuyến, nhắn tin hay thông báo qua email.
+- Quên mật khẩu hiện chỉ tạo yêu cầu để quản trị viên xử lý thủ công; không có
+  liên kết đặt lại mật khẩu, mã xác minh hay email tự động.
+- Xuất dữ liệu chỉ là CSV, chưa có báo cáo Excel/PDF, tùy chọn cột, bộ lọc hay
+  phân tích tổng hợp chuyên sâu. Trang kết quả quản trị giới hạn danh sách hiển
+  thị gần đây ở 100 điểm và 30 dòng nhật ký.
+- Kiểm thử được cung cấp là smoke test cho luồng chính; báo cáo này không khẳng
+  định đã có kiểm thử đầy đủ về tải, bảo mật, khả năng truy cập hoặc môi trường
+  triển khai.
+- SQLite và cấu hình chạy hiện tại phù hợp hơn với demo/vận hành quy mô nhỏ;
+  chưa thể hiện các cơ chế sao lưu, phân quyền vận hành, giám sát hay mở rộng
+  cho nhiều máy chủ.
+- README cung cấp tài khoản mẫu với mật khẩu đơn giản; config.py có SECRET_KEY
+  mặc định và app.py chạy debug khi được chạy trực tiếp. Cần thay cấu hình này,
+  đổi mật khẩu mẫu và đánh giá thêm bảo mật trước khi đưa lên môi trường thật.
+- Một số chức năng thao tác trên bảng/lớp phụ thuộc vào việc lọc/tìm kiếm và
+  thông báo trên giao diện; chưa có giao diện báo cáo tùy biến cho từng người dùng.
+
+8. Kết luận
+-----------
+Website hiện đáp ứng được các nhu cầu quản lý cơ bản xoay quanh khóa học, lớp,
+lịch, hồ sơ, ghi danh và điểm IELTS, với phân quyền theo vai trò và một số quy
+tắc nghiệp vụ quan trọng. Các điểm mạnh phù hợp cho mục đích học tập, demo hoặc
+quản lý quy mô nhỏ.
+
+Hệ thống chưa thay thế một nền tảng quản lý trung tâm đầy đủ và chưa nên triển
+khai công khai với cấu hình mặc định. Các ưu tiên phát triển tiếp theo có thể
+gồm bảo mật/cấu hình sản xuất, quy trình email đặt lại mật khẩu, sao lưu dữ liệu,
+nghiệp vụ học phí-điểm danh và kiểm thử bao phủ hơn.

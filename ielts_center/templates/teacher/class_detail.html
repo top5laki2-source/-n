@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Lớp {{ classroom.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title mb-1">Lớp {{ classroom.code }}</h4>
+    <p class="page-sub mb-0">{{ classroom.course.name }} · {{ classroom.schedule_display }}</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('teacher.enter_scores', class_id=classroom.id) }}" class="btn btn-primary" style="background:var(--brand);border:none">
+      <i class="bi bi-pencil-square"></i> Nhập điểm
+    </a>
+    <a href="{{ url_for('teacher.export_scores', class_id=classroom.id) }}" class="btn btn-outline-secondary">
+      <i class="bi bi-download"></i> Xuất bảng điểm
+    </a>
+  </div>
+</div>
+
+<!-- Tien do ca lop -->
+<div class="row g-3 mb-4">
+  {% for key, label in skills %}
+  <div class="col-6 col-lg-2">
+    <div class="stat-card">
+      <div class="stat-value">{{ averages[key] if averages[key] is not none else '—' }}</div>
+      <div class="stat-label">{{ label }}</div>
+    </div>
+  </div>
+  {% endfor %}
+  <div class="col-6 col-lg-2">
+    <div class="stat-card accent">
+      <div class="stat-value">{{ class_average if class_average is not none else '—' }}</div>
+      <div class="stat-label">Overall TB lớp</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-2">
+    <div class="stat-card green">
+      <div class="stat-value">{{ classroom.current_size }}</div>
+      <div class="stat-label">Sĩ số</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-people"></i> Danh sách học viên</span>
+    <input class="form-control form-control-sm w-auto" placeholder="Tìm học viên..." data-filter-target="#student-table">
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0" id="student-table">
+      <thead>
+        <tr><th>Mã HV</th><th>Họ tên</th><th>Band đầu vào</th>
+            <th>Overall giữa khóa</th><th>Overall cuối khóa</th>
+            <th>Tiến bộ</th><th>Trạng thái</th></tr>
+      </thead>
+      <tbody>
+      {% for e in active_enrollments %}
+        {% set score = e.latest_score %}
+        {% set mid_score = scores_by_term[e.id]['Giữa khóa'] %}
+        {% set final_score = scores_by_term[e.id]['Cuối khóa'] %}
+        <tr>
+          <td>{{ e.student.code or '—' }}</td>
+          <td class="fw-semibold">
+            <a href="{{ url_for('teacher.student_scores', class_id=classroom.id, enrollment_id=e.id) }}" class="text-decoration-none">
+              {{ e.student.full_name }}
+            </a>
+          </td>
+          <td><span class="band-pill">{{ e.student.entry_band or '—' }}</span></td>
+          <td>
+            {% if mid_score and mid_score.overall is not none %}
+              <span class="band-pill high">{{ mid_score.overall }}</span>
+            {% else %}<span class="band-pill none">—</span>{% endif %}
+          </td>
+          <td>
+            {% if final_score and final_score.overall is not none %}
+              <span class="band-pill high">{{ final_score.overall }}</span>
+            {% else %}<span class="band-pill none">—</span>{% endif %}
+          </td>
+          <td>
+            {% if score and score.overall is not none and e.student.entry_band is not none %}
+              {% set diff = (score.overall - e.student.entry_band) | round(1) %}
+              <span class="badge bg-{{ 'success' if diff > 0 else 'secondary' }}">
+                {{ '+' if diff > 0 else '' }}{{ diff }}
+              </span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td><span class="badge bg-secondary">{{ e.status_label }}</span></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Lớp chưa có học viên.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<p class="uc-tag mt-3">Chỉ tính điểm đã được công bố khi tổng hợp tiến độ lớp.</p>
+{% endblock %}

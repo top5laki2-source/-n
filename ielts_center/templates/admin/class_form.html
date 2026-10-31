@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if classroom else 'Mở' }} lớp học{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="page-title">{{ 'Cập nhật lớp học' if classroom else 'Mở lớp học mới' }}</h4>
+    <p class="page-sub mb-3">
+      Khi đổi giáo viên, hệ thống tự kiểm tra trùng lịch với các lớp khác.
+    </p>
+
+    <div class="card">
+      <div class="card-body">
+        <form method="post" novalidate>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Mã lớp <span class="text-danger">*</span></label>
+              <input name="code" class="form-control" required value="{{ classroom.code if classroom else '' }}" placeholder="IELTS-A1">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Thuộc khóa học <span class="text-danger">*</span></label>
+              <select name="course_id" class="form-select" required>
+                <option value="">-- Chọn khóa học --</option>
+                {% for c in courses %}
+                  <option value="{{ c.id }}" {% if classroom and classroom.course_id == c.id %}selected{% endif %}>
+                    {{ c.code }} · {{ c.name }} (band vào {{ c.entry_band }})
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Giáo viên phụ trách</label>
+              <select name="teacher_id" class="form-select">
+                <option value="">-- Chưa phân công --</option>
+                {% for t in teachers %}
+                  <option value="{{ t.id }}" {% if classroom and classroom.teacher_id == t.id %}selected{% endif %}>
+                    {{ t.full_name }}{% if t.skills %} · {{ t.skills }}{% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Phòng học</label>
+              <input name="room" class="form-control" value="{{ classroom.room if classroom else '' }}" placeholder="P.201">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Sĩ số tối đa</label>
+              <input name="max_size" type="number" min="1" class="form-control" value="{{ classroom.max_size if classroom else 18 }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Ngày khai giảng</label>
+              <input name="start_date" type="date" class="form-control"
+                     value="{{ classroom.start_date.isoformat() if classroom and classroom.start_date else '' }}">
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Trạng thái</label>
+              <select name="status" class="form-select">
+                {% for key, label in class_status.items() %}
+                  <option value="{{ key }}" {% if classroom and classroom.status == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <button class="btn btn-primary" style="background:var(--brand);border:none"><i class="bi bi-check-lg"></i> Lưu lớp học</button>
+          <a href="{{ url_for('admin.classes') }}" class="btn btn-light">Hủy</a>
+        </form>
+      </div>
+    </div>
+
+    {% if not classroom %}
+      <div class="alert alert-info mt-3 small mb-0">
+        Sau khi tạo lớp, bạn sẽ được chuyển sang trang chi tiết để xếp thời khóa biểu và thêm học viên.
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

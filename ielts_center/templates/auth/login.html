@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Đăng nhập · Quản lý trung tâm IELTS{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+  <div class="auth-logo"><i class="bi bi-mortarboard-fill"></i></div>
+  <h4 class="text-center mb-1" style="color:var(--brand-dark);font-weight:700">{{ CENTER_NAME }}</h4>
+  <p class="text-center text-muted small mb-4">Hệ thống quản lý đào tạo</p>
+
+  <form method="post" novalidate>
+    <div class="mb-3">
+      <label class="form-label">Tên đăng nhập</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-person"></i></span>
+        <input type="text" name="username" class="form-control" value="{{ username }}" required autofocus>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Mật khẩu</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+        <input type="password" name="password" class="form-control" required>
+      </div>
+    </div>
+    <button class="btn btn-primary w-100 py-2" style="background:var(--brand);border:none">
+      <i class="bi bi-box-arrow-in-right"></i> Đăng nhập
+    </button>
+  </form>
+
+  <div class="text-center mt-3">
+    <a href="{{ url_for('auth.forgot_password') }}" class="small text-decoration-none">Quên mật khẩu?</a>
+  </div>
+
+  <div class="demo-box mt-4">
+    <div class="fw-semibold mb-1">Tài khoản dùng thử</div>
+    Quản trị viên: <code>admin</code> / <code>123456</code><br>
+    Giáo viên: <code>gv.mai</code> / <code>123456</code><br>
+    Học viên: <code>hv.an</code> / <code>123456</code>
+  </div>
+</div>
+{% endblock %}

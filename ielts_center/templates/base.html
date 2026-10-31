@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Quản lý trung tâm IELTS{% endblock %}</title>
+  <!-- Bootstrap va Bootstrap Icons duoc dong goi san trong static/vendor nen chay duoc offline -->
+  <link href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='vendor/bootstrap-icons/bootstrap-icons.min.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="{% if not current_user.is_authenticated %}page-auth{% endif %}">
+
+{% if current_user.is_authenticated %}
+<nav class="navbar navbar-expand-lg app-navbar sticky-top">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand" href="{{ url_for('auth.index') }}">
+      <i class="bi bi-mortarboard-fill me-1"></i> IELTS<span class="brand-light">Center</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto">
+        {% if current_user.is_admin %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Tổng quan</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.courses') }}"><i class="bi bi-journal-bookmark"></i> Khóa học</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.classes') }}"><i class="bi bi-people"></i> Lớp học</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.schedule_management') }}"><i class="bi bi-calendar-week"></i> Lịch học</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.teachers') }}"><i class="bi bi-person-video3"></i> Giáo viên</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.students') }}"><i class="bi bi-person-badge"></i> Học viên</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.accounts') }}"><i class="bi bi-shield-lock"></i> Tài khoản</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('admin.scores') }}"><i class="bi bi-clipboard-data"></i> Kết quả</a></li>
+        {% elif current_user.is_teacher %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('teacher.dashboard') }}"><i class="bi bi-speedometer2"></i> Lớp giảng dạy</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('teacher.schedule') }}"><i class="bi bi-calendar-week"></i> Lịch dạy</a></li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('student.dashboard') }}"><i class="bi bi-speedometer2"></i> Trang chủ</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('student.courses') }}"><i class="bi bi-journal-bookmark"></i> Khóa học</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('student.results') }}"><i class="bi bi-graph-up-arrow"></i> Kết quả học tập</a></li>
+        {% endif %}
+      </ul>
+
+      <div class="dropdown">
+        <a class="btn btn-user dropdown-toggle" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-person-circle"></i>
+          {{ current_user.full_name }}
+          <span class="badge role-badge ms-1">{{ current_user.role_label }}</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}"><i class="bi bi-key"></i> Đổi mật khẩu</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> Đăng xuất</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+<main class="{% if current_user.is_authenticated %}container-fluid px-4 py-4{% else %}auth-wrapper{% endif %}">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-area">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+{% if current_user.is_authenticated %}
+<footer class="app-footer">
+  {{ CENTER_NAME }} · Hệ thống quản lý trung tâm IELTS
+</footer>
+{% endif %}
+
+<script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

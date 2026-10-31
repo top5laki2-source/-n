@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Quản lý tài khoản{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title">Quản lý tài khoản</h4>
+    <p class="page-sub mb-0">Mật khẩu hiện tại không được hiển thị. Nhập mật khẩu mới để đặt lại; để trống sẽ dùng mật khẩu mặc định 123456.</p>
+  </div>
+  <a href="{{ url_for('admin.account_form') }}" class="btn btn-primary" style="background:var(--brand);border:none">
+    <i class="bi bi-plus-lg"></i> Tạo tài khoản
+  </a>
+</div>
+
+{% if resets %}
+<div class="card mb-3 border-warning">
+  <div class="card-header bg-warning-subtle"><i class="bi bi-envelope-exclamation"></i> Yêu cầu đặt lại mật khẩu ({{ resets|length }})</div>
+  <div class="card-body py-2">
+    {% for r in resets %}
+      <div class="d-flex justify-content-between align-items-center py-1 border-bottom">
+        <span class="small">
+          <strong>{{ r.user.full_name }}</strong> (<code>{{ r.user.username }}</code>) ·
+          gửi lúc {{ r.created_at | datetime_vn }}
+        </span>
+        <form method="post" action="{{ url_for('admin.account_reset_password', user_id=r.user_id) }}" class="d-flex gap-1"
+              data-confirm="Đặt lại mật khẩu cho {{ r.user.username }}?">
+          <input name="new_password" class="form-control form-control-sm" placeholder="Mật khẩu mới"
+                 title="Để trống sẽ đặt mật khẩu mặc định 123456" style="width:130px">
+          <button class="btn btn-sm btn-warning">Đặt lại</button>
+        </form>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span>Danh sách tài khoản ({{ users|length }})</span>
+    <div class="d-flex gap-2">
+      <input class="form-control form-control-sm" placeholder="Lọc nhanh..." data-filter-target="#account-table">
+      <form method="get">
+        <select name="role" class="form-select form-select-sm" onchange="this.form.submit()">
+          <option value="">Tất cả vai trò</option>
+          {% for key, label in role_labels.items() %}
+            <option value="{{ key }}" {% if role == key %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0" id="account-table">
+      <thead>
+        <tr><th>Tài khoản</th><th>Họ tên</th><th>Vai trò</th><th>Đăng nhập sai</th>
+            <th>Trạng thái</th><th style="width:330px">Thao tác</th></tr>
+      </thead>
+      <tbody>
+      {% for u in users %}
+        <tr>
+          <td><code>{{ u.username }}</code></td>
+          <td class="fw-semibold">{{ u.full_name }}</td>
+          <td>
+            <form method="post" action="{{ url_for('admin.account_role', user_id=u.id) }}" class="d-flex gap-1">
+              <select name="role" class="form-select form-select-sm" style="width:auto">
+                {% for key, label in role_labels.items() %}
+                  <option value="{{ key }}" {% if u.role == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              <button class="btn btn-sm btn-outline-secondary" title="Đổi vai trò"><i class="bi bi-check"></i></button>
+            </form>
+          </td>
+          <td class="text-center">{{ u.failed_logins }}</td>
+          <td>
+            {% if u.is_locked %}<span class="badge bg-danger">Đang khóa</span>
+            {% else %}<span class="badge bg-success">Hoạt động</span>{% endif %}
+          </td>
+          <td>
+            <div class="d-flex gap-1">
+              <form method="post" action="{{ url_for('admin.account_lock', user_id=u.id) }}"
+                    data-confirm="{{ 'Mở khóa' if u.is_locked else 'Khóa' }} tài khoản {{ u.username }}?">
+                <button class="btn btn-sm btn-outline-{{ 'success' if u.is_locked else 'danger' }}">
+                  <i class="bi bi-{{ 'unlock' if u.is_locked else 'lock' }}"></i>
+                  {{ 'Mở khóa' if u.is_locked else 'Khóa' }}
+                </button>
+              </form>
+              <form method="post" action="{{ url_for('admin.account_reset_password', user_id=u.id) }}" class="d-flex gap-1"
+                    data-confirm="Đặt lại mật khẩu cho {{ u.username }}?">
+                <input name="new_password" class="form-control form-control-sm" placeholder="Mật khẩu mới"
+                       title="Để trống sẽ đặt mật khẩu mặc định 123456" style="width:110px">
+                <button class="btn btn-sm btn-outline-warning"><i class="bi bi-key"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

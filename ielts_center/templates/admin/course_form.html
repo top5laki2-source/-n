@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if course else 'Tạo' }} khóa học{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="page-title">{{ 'Cập nhật khóa học' if course else 'Tạo khóa học mới' }}</h4>
+    <p class="page-sub mb-3">Band mục tiêu phải cao hơn band đầu vào.</p>
+
+    <div class="card">
+      <div class="card-body">
+        <form method="post" novalidate>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Mã khóa học <span class="text-danger">*</span></label>
+              <input name="code" class="form-control" required value="{{ course.code if course else '' }}" placeholder="IELTS5065">
+            </div>
+            <div class="col-md-8">
+              <label class="form-label">Tên khóa học <span class="text-danger">*</span></label>
+              <input name="name" class="form-control" required value="{{ course.name if course else '' }}" placeholder="IELTS 5.0 lên 6.5">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Band đầu vào <span class="text-danger">*</span></label>
+              <input name="entry_band" type="number" step="0.5" min="0" max="9" class="form-control" required
+                     value="{{ course.entry_band if course else '5.0' }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Band mục tiêu <span class="text-danger">*</span></label>
+              <input name="target_band" type="number" step="0.5" min="0" max="9" class="form-control" required
+                     value="{{ course.target_band if course else '6.5' }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Số buổi <span class="text-danger">*</span></label>
+              <input name="sessions" type="number" min="1" class="form-control" required value="{{ course.sessions if course else 36 }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Học phí (VNĐ)</label>
+              <input name="tuition" type="number" min="0" step="100000" class="form-control" value="{{ course.tuition if course else 8000000 }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Mô tả</label>
+              <textarea name="description" class="form-control" rows="3">{{ course.description if course else '' }}</textarea>
+            </div>
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="is_open" id="is_open"
+                       {% if course is none or course.is_open %}checked{% endif %}>
+                <label class="form-check-label" for="is_open">Đang mở tuyển sinh</label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <button class="btn btn-primary" style="background:var(--brand);border:none"><i class="bi bi-check-lg"></i> Lưu khóa học</button>
+          <a href="{{ url_for('admin.courses') }}" class="btn btn-light">Hủy</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

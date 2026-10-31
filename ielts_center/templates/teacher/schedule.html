@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Lịch dạy cá nhân{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Lịch dạy trong tuần</h4>
+<p class="page-sub mb-4">Tổng hợp từ thời khóa biểu của các lớp bạn phụ trách.</p>
+
+<div class="row g-3">
+{% for index in range(7) %}
+  <div class="col-md-6 col-xl-3">
+    <div class="card h-100">
+      <div class="card-header py-2">{{ weekdays[index] }}</div>
+      <div class="card-body py-3">
+        {% for schedule, classroom in table[index] %}
+          <div class="timetable-cell">
+            <div class="fw-semibold">{{ schedule.start_time }} - {{ schedule.end_time }}</div>
+            <div>
+              <a href="{{ url_for('teacher.class_detail', class_id=classroom.id) }}" class="text-decoration-none">{{ classroom.code }}</a>
+              <span class="text-muted">· {{ classroom.room or 'chưa có phòng' }}</span>
+            </div>
+            <div class="uc-tag">{{ classroom.course.name }}</div>
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">Không có lịch dạy.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

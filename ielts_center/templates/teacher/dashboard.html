@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Lớp giảng dạy{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Lớp được phân công</h4>
+<p class="page-sub mb-4">Bạn chỉ xem và nhập điểm cho các lớp mình phụ trách.</p>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ classes|length }}</div>
+      <div class="stat-label">Lớp phụ trách</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card green">
+      <div class="stat-value">{{ total_students }}</div>
+      <div class="stat-label">Học viên</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card accent">
+      <div class="stat-value">{{ pending }}</div>
+      <div class="stat-label">Chưa có điểm công bố</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ current_user.teacher.ielts_band or '—' }}</div>
+      <div class="stat-label">Band IELTS của bạn</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+{% for c in classes %}
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>{{ c.code }}</span>
+        <span class="badge bg-info text-dark">{{ c.status_label }}</span>
+      </div>
+      <div class="card-body">
+        <h6 class="mb-1">{{ c.course.name }}</h6>
+        <p class="small text-muted mb-3">
+          Band {{ c.course.entry_band }} → {{ c.course.target_band }} ·
+          {{ c.course.sessions }} buổi · Phòng {{ c.room or '—' }}
+        </p>
+        <dl class="row small mb-3">
+          <dt class="col-4 text-muted">Sĩ số</dt><dd class="col-8">{{ c.current_size }}/{{ c.max_size }}</dd>
+          <dt class="col-4 text-muted">Lịch học</dt><dd class="col-8">{{ c.schedule_display }}</dd>
+          <dt class="col-4 text-muted">Khai giảng</dt><dd class="col-8">{{ c.start_date | date_vn }}</dd>
+        </dl>
+        <a href="{{ url_for('teacher.class_detail', class_id=c.id) }}" class="btn btn-sm btn-outline-primary">
+          <i class="bi bi-people"></i> Danh sách & tiến độ
+        </a>
+        <a href="{{ url_for('teacher.enter_scores', class_id=c.id) }}" class="btn btn-sm btn-primary" style="background:var(--brand);border:none">
+          <i class="bi bi-pencil-square"></i> Nhập điểm
+        </a>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="col-12">
+    <div class="alert alert-info">Bạn chưa được phân công lớp nào. Liên hệ quản trị viên để được phân lớp.</div>
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

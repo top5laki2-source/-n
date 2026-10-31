@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Sửa' if teacher else 'Thêm' }} hồ sơ giáo viên{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <h4 class="page-title">{{ 'Cập nhật hồ sơ giáo viên' if teacher else 'Thêm hồ sơ giáo viên' }}</h4>
+    <p class="page-sub mb-3">
+      {% if teacher %}Tài khoản: <code>{{ teacher.user.username }}</code>
+      {% else %}Hệ thống sẽ tạo tài khoản đăng nhập cho giáo viên này.{% endif %}
+    </p>
+
+    <div class="card">
+      <div class="card-body">
+        <form method="post" novalidate>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Họ và tên <span class="text-danger">*</span></label>
+              <input name="full_name" class="form-control" required value="{{ teacher.full_name if teacher else '' }}">
+            </div>
+            {% if not teacher %}
+            <div class="col-md-3">
+              <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+              <input name="username" class="form-control" required placeholder="gv.mai">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Mật khẩu</label>
+              <input name="password" class="form-control" placeholder="mặc định 123456">
+            </div>
+            {% endif %}
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <input name="email" type="email" class="form-control" value="{{ teacher.user.email if teacher else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Số điện thoại</label>
+              <input name="phone" class="form-control" value="{{ teacher.user.phone if teacher else '' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Bằng cấp / chứng chỉ</label>
+              <input name="degree" class="form-control" value="{{ teacher.degree if teacher else '' }}" placeholder="Cử nhân Sư phạm Anh, TESOL">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Band IELTS</label>
+              <input name="ielts_band" type="number" step="0.5" min="0" max="9" class="form-control"
+                     value="{{ teacher.ielts_band if teacher else '' }}">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Kỹ năng đảm nhiệm</label>
+              <input name="skills" class="form-control" value="{{ teacher.skills if teacher else '' }}" placeholder="Writing, Speaking">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Ghi chú</label>
+              <textarea name="note" class="form-control" rows="2">{{ teacher.note if teacher else '' }}</textarea>
+            </div>
+          </div>
+
+          <hr class="my-4">
+          <button class="btn btn-primary" style="background:var(--brand);border:none"><i class="bi bi-check-lg"></i> Lưu hồ sơ</button>
+          <a href="{{ url_for('admin.teachers') }}" class="btn btn-light">Hủy</a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

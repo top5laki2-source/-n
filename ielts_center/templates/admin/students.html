@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Quản lý học viên{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title">Quản lý học viên</h4>
+    <p class="page-sub mb-0">Thêm hồ sơ học viên sẽ đồng thời tạo tài khoản đăng nhập.</p>
+  </div>
+  <a href="{{ url_for('admin.student_form') }}" class="btn btn-primary" style="background:var(--brand);border:none">
+    <i class="bi bi-plus-lg"></i> Thêm học viên
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Danh sách học viên ({{ students|length }})</span>
+    <form class="d-flex gap-2" method="get">
+      <input type="text" name="q" value="{{ keyword }}" class="form-control form-control-sm" placeholder="Tìm tên hoặc mã HV...">
+      <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Mã HV</th><th>Họ tên</th><th>Tài khoản</th><th>Band đầu vào</th>
+            <th>Số điện thoại</th><th>Lớp đang học</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for s in students %}
+        <tr>
+          <td>{{ s.code or '—' }}</td>
+          <td class="fw-semibold">
+            <a href="{{ url_for('admin.student_detail', student_id=s.id) }}" class="text-decoration-none">{{ s.full_name }}</a>
+          </td>
+          <td><code>{{ s.user.username }}</code></td>
+          <td><span class="band-pill">{{ s.entry_band or '—' }}</span></td>
+          <td class="small">{{ s.user.phone or '—' }}</td>
+          <td class="small">
+            {% set active = s.enrollments | selectattr('status', 'equalto', 'studying') | list %}
+            {% if active %}
+              {% for e in active %}<span class="badge bg-light text-dark border">{{ e.classroom.code }}</span> {% endfor %}
+            {% else %}<span class="text-muted">Chưa xếp lớp</span>{% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('admin.student_detail', student_id=s.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-eye"></i></a>
+            <a href="{{ url_for('admin.student_form', student_id=s.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có học viên nào.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

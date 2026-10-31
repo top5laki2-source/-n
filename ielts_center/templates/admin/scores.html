@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Kết quả học tập{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Kết quả đã công bố</h4>
+<p class="page-sub mb-4">
+  Điểm đã chốt sẽ bị khóa, giáo viên không sửa được. Chỉ quản trị viên mới mở khóa — đây là luồng phụ
+  <code>&lt;&lt;extend&gt;&gt;</code> trong sơ đồ use case.
+</p>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-clipboard-check"></i> Bảng điểm đã chốt ({{ scores|length }})</span>
+        <input class="form-control form-control-sm w-auto" placeholder="Lọc nhanh..." data-filter-target="#score-table">
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0" id="score-table">
+          <thead>
+            <tr><th>Học viên</th><th>Lớp</th><th>Kỳ</th><th>L</th><th>R</th><th>W</th><th>S</th>
+                <th>Overall</th><th>Cập nhật</th><th></th></tr>
+          </thead>
+          <tbody>
+          {% for s in scores %}
+            <tr>
+              <td class="fw-semibold">{{ s.enrollment.student.full_name }}</td>
+              <td>{{ s.enrollment.classroom.code }}</td>
+              <td class="small">{{ s.term }}</td>
+              <td>{{ s.listening }}</td><td>{{ s.reading }}</td>
+              <td>{{ s.writing }}</td><td>{{ s.speaking }}</td>
+              <td><span class="band-pill high">{{ s.overall }}</span></td>
+              <td class="small text-muted">{{ s.updated_at | datetime_vn }}</td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('admin.score_unlock', score_id=s.id) }}"
+                      data-confirm="Mở khóa để giáo viên sửa lại điểm này?">
+                  <button class="btn btn-sm btn-outline-warning"><i class="bi bi-unlock"></i> Mở khóa</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="10" class="text-center text-muted py-4">Chưa có kết quả nào được công bố.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-journal-text"></i> Nhật ký thay đổi điểm</div>
+      <div class="card-body" style="max-height:520px;overflow-y:auto">
+        {% for log in logs %}
+          <div class="border-bottom pb-2 mb-2">
+            <div class="d-flex justify-content-between">
+              <span class="badge bg-light text-dark border">{{ log.action }}</span>
+              <span class="small text-muted">{{ log.changed_at | datetime_vn }}</span>
+            </div>
+            <div class="small mt-1">
+              <strong>{{ log.score.enrollment.student.full_name }}</strong>
+              · {{ log.score.enrollment.classroom.code }} · {{ log.score.term }}
+            </div>
+            <div class="small text-muted">
+              {{ log.old_value }} → <span class="text-dark">{{ log.new_value }}</span>
+            </div>
+            <div class="uc-tag">Bởi: {{ log.user.full_name if log.user else '—' }}</div>
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">Chưa có thay đổi nào.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

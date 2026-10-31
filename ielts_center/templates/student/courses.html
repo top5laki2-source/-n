@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Khóa học đang mở{% endblock %}
+
+{% block content %}
+<h4 class="page-title">Khóa học đang mở tuyển sinh</h4>
+<p class="page-sub mb-4">Liên hệ quầy tư vấn của trung tâm để được kiểm tra đầu vào và xếp lớp.</p>
+
+<div class="row g-3">
+{% for c in courses %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>{{ c.code }}</span>
+        <span class="badge bg-success">Đang tuyển</span>
+      </div>
+      <div class="card-body">
+        <h6>{{ c.name }}</h6>
+        <div class="d-flex align-items-center gap-2 my-3">
+          <span class="band-pill">{{ c.entry_band }}</span>
+          <i class="bi bi-arrow-right text-muted"></i>
+          <span class="band-pill high">{{ c.target_band }}</span>
+        </div>
+        <dl class="row small mb-3">
+          <dt class="col-5 text-muted">Số buổi</dt><dd class="col-7">{{ c.sessions }}</dd>
+          <dt class="col-5 text-muted">Học phí</dt><dd class="col-7 fw-semibold">{{ c.tuition | vnd }}</dd>
+          <dt class="col-5 text-muted">Lớp đang mở</dt>
+          <dd class="col-7">{{ c.classes | selectattr('status', 'equalto', 'open') | list | length }}</dd>
+        </dl>
+        {% if c.description %}<p class="small text-muted mb-0">{{ c.description }}</p>{% endif %}
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="col-12"><div class="alert alert-info">Hiện chưa có khóa học nào đang tuyển sinh.</div></div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Quản lý lịch học{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title">Quản lý lịch học</h4>
+    <p class="page-sub mb-0">Lịch được lưu theo từng lớp và cập nhật trực tiếp cho giáo viên, học viên.</p>
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header"><i class="bi bi-calendar-plus"></i> Tạo buổi học</div>
+  <div class="card-body">
+    <form method="post" action="{{ url_for('admin.schedule_create') }}" class="row g-2 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label small">Lớp học</label>
+        <select name="class_id" class="form-select form-select-sm" required>
+          <option value="">-- Chọn lớp --</option>
+          {% for c in classes %}
+            <option value="{{ c.id }}">{{ c.code }} · {{ c.course.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small">Thứ</label>
+        <select name="weekday" class="form-select form-select-sm" required>
+          {% for d in weekdays %}<option value="{{ loop.index0 }}">{{ d }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Bắt đầu</label>
+        <input type="time" name="start_time" class="form-control form-control-sm" value="18:00" required>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">Kết thúc</label>
+        <input type="time" name="end_time" class="form-control form-control-sm" value="20:00" required>
+      </div>
+      <div class="col-md-1 d-grid">
+        <button class="btn btn-sm btn-primary" style="background:var(--brand);border:none" title="Tạo lịch">
+          <i class="bi bi-plus-lg"></i>
+        </button>
+      </div>
+    </form>
+    {% if not classes %}
+      <p class="text-muted small mt-2 mb-0">Chưa có lớp học để xếp lịch.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">Các buổi học đã xếp ({{ schedules|length }})</div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr><th>Lớp</th><th>Thứ</th><th>Giờ bắt đầu</th><th>Giờ kết thúc</th><th>Phòng</th><th>Giáo viên</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for s in schedules %}
+        <tr>
+          <td>
+            <select name="class_id" form="schedule-edit-{{ s.id }}" class="form-select form-select-sm">
+              {% for c in classes %}
+                <option value="{{ c.id }}" {% if c.id == s.class_id %}selected{% endif %}>{{ c.code }} · {{ c.course.name }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td>
+            <select name="weekday" form="schedule-edit-{{ s.id }}" class="form-select form-select-sm">
+              {% for d in weekdays %}
+                <option value="{{ loop.index0 }}" {% if s.weekday == loop.index0 %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td><input type="time" name="start_time" form="schedule-edit-{{ s.id }}" class="form-control form-control-sm" value="{{ s.start_time }}" required></td>
+          <td><input type="time" name="end_time" form="schedule-edit-{{ s.id }}" class="form-control form-control-sm" value="{{ s.end_time }}" required></td>
+          <td>{{ s.classroom.room or '—' }}</td>
+          <td>{{ s.classroom.teacher.full_name if s.classroom.teacher else 'Chưa phân công' }}</td>
+          <td class="text-end text-nowrap">
+            <form id="schedule-edit-{{ s.id }}" method="post" action="{{ url_for('admin.schedule_update', schedule_id=s.id) }}"></form>
+            <button type="submit" form="schedule-edit-{{ s.id }}" class="btn btn-sm btn-outline-primary" title="Lưu thay đổi">
+              <i class="bi bi-check-lg"></i>
+            </button>
+            <form method="post" action="{{ url_for('admin.schedule_delete', schedule_id=s.id) }}" class="d-inline"
+                  data-confirm="Xóa buổi học này khỏi thời khóa biểu?">
+              <button class="btn btn-sm btn-outline-danger" title="Xóa lịch"><i class="bi bi-trash"></i></button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có buổi học nào được xếp.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

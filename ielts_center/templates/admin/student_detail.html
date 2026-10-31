@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Hồ sơ {{ student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title mb-1">{{ student.full_name }}</h4>
+    <p class="page-sub mb-0">Mã học viên: {{ student.code or '—' }} · Tài khoản <code>{{ student.user.username }}</code></p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('admin.student_form', student_id=student.id) }}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i> Sửa hồ sơ</a>
+    <a href="{{ url_for('admin.students') }}" class="btn btn-light">← Danh sách</a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card mb-3">
+      <div class="card-header"><i class="bi bi-person-vcard"></i> Thông tin cá nhân</div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Ngày sinh</dt><dd class="col-7">{{ student.dob | date_vn }}</dd>
+          <dt class="col-5 text-muted">Điện thoại</dt><dd class="col-7">{{ student.user.phone or '—' }}</dd>
+          <dt class="col-5 text-muted">Email</dt><dd class="col-7">{{ student.user.email or '—' }}</dd>
+          <dt class="col-5 text-muted">Địa chỉ</dt><dd class="col-7">{{ student.address or '—' }}</dd>
+          <dt class="col-5 text-muted">Band đầu vào</dt>
+          <dd class="col-7"><span class="band-pill">{{ student.entry_band or 'Chưa có' }}</span></dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><i class="bi bi-person-plus"></i> Ghi danh vào lớp</div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('admin.enroll', student_id=student.id) }}">
+          <select name="class_id" class="form-select form-select-sm mb-2" required>
+            <option value="">-- Chọn lớp --</option>
+            {% for c in open_classes %}
+              <option value="{{ c.id }}">
+                {{ c.code }} · {{ c.course.name }} ({{ c.current_size }}/{{ c.max_size }})
+              </option>
+            {% endfor %}
+          </select>
+          <button class="btn btn-sm btn-primary w-100" style="background:var(--brand);border:none">Xếp vào lớp</button>
+        </form>
+        <p class="uc-tag mt-2 mb-0">
+          Kiểm tra band đầu vào so với yêu cầu của khóa học và sĩ số còn lại của lớp.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header"><i class="bi bi-journal-check"></i> Quá trình học tập</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Lớp</th><th>Khóa học</th><th>Ngày ghi danh</th><th>Trạng thái</th><th>Kết quả mới nhất</th><th></th></tr></thead>
+          <tbody>
+          {% for e in student.enrollments %}
+            <tr>
+              <td class="fw-semibold">{{ e.classroom.code }}</td>
+              <td class="small">{{ e.classroom.course.name }}</td>
+              <td class="small">{{ e.enrolled_at | datetime_vn }}</td>
+              <td><span class="badge bg-secondary">{{ e.status_label }}</span></td>
+              <td>
+                {% set score = e.latest_score %}
+                {% if score %}
+                  <span class="band-pill high">{{ score.overall }}</span>
+                  <span class="small text-muted ms-1">{{ score.term }}</span>
+                {% else %}<span class="band-pill none">—</span>{% endif %}
+              </td>
+              <td class="text-end">
+                <form method="post" action="{{ url_for('admin.enrollment_status', enrollment_id=e.id) }}" class="d-flex gap-1 justify-content-end">
+                  <select name="status" class="form-select form-select-sm" style="width:auto">
+                    {% for key, label in enroll_status.items() %}
+                      <option value="{{ key }}" {% if e.status == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                  <button class="btn btn-sm btn-outline-secondary">Lưu</button>
+                </form>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" class="text-center text-muted py-4">Học viên chưa được xếp lớp.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

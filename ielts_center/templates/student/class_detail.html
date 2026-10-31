@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Lớp {{ classroom.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title mb-1">Lớp {{ classroom.code }}</h4>
+    <p class="page-sub mb-0">{{ classroom.course.name }}</p>
+  </div>
+  <a href="{{ url_for('student.dashboard') }}" class="btn btn-light">← Trang chủ</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-info-circle"></i> Thông tin lớp</div>
+      <div class="card-body">
+        <dl class="row mb-0 small">
+          <dt class="col-5 text-muted">Khóa học</dt><dd class="col-7">{{ classroom.course.name }}</dd>
+          <dt class="col-5 text-muted">Band mục tiêu</dt>
+          <dd class="col-7"><span class="band-pill high">{{ classroom.course.target_band }}</span></dd>
+          <dt class="col-5 text-muted">Số buổi</dt><dd class="col-7">{{ classroom.course.sessions }}</dd>
+          <dt class="col-5 text-muted">Giáo viên</dt>
+          <dd class="col-7">{{ classroom.teacher.full_name if classroom.teacher else 'Chưa phân công' }}</dd>
+          <dt class="col-5 text-muted">Kỹ năng phụ trách</dt>
+          <dd class="col-7">{{ classroom.teacher.skills if classroom.teacher and classroom.teacher.skills else '—' }}</dd>
+          <dt class="col-5 text-muted">Phòng học</dt><dd class="col-7">{{ classroom.room or '—' }}</dd>
+          <dt class="col-5 text-muted">Khai giảng</dt><dd class="col-7">{{ classroom.start_date | date_vn }}</dd>
+          <dt class="col-5 text-muted">Trạng thái của bạn</dt>
+          <dd class="col-7"><span class="badge bg-secondary">{{ enrollment.status_label }}</span></dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="bi bi-calendar-week"></i> Thời khóa biểu</div>
+      <div class="card-body">
+        {% for s in classroom.schedules %}
+          <div class="timetable-cell">
+            <div class="fw-semibold">{{ s.weekday_label }}</div>
+            <div>{{ s.start_time }} - {{ s.end_time }} · Phòng {{ classroom.room or '—' }}</div>
+          </div>
+        {% else %}
+          <p class="text-muted small mb-0">Lớp chưa xếp thời khóa biểu.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header"><i class="bi bi-clipboard-data"></i> Kết quả của bạn tại lớp này</div>
+  <div class="table-responsive">
+    <table class="table mb-0">
+      <thead><tr><th>Kỳ</th><th>Listening</th><th>Reading</th><th>Writing</th><th>Speaking</th><th>Overall</th><th>Nhận xét</th></tr></thead>
+      <tbody>
+      {% for r in enrollment.scores if r.is_published %}
+        <tr>
+          <td class="fw-semibold">{{ r.term }}</td>
+          <td>{{ r.listening }}</td><td>{{ r.reading }}</td>
+          <td>{{ r.writing }}</td><td>{{ r.speaking }}</td>
+          <td><span class="band-pill high">{{ r.overall }}</span></td>
+          <td class="small text-muted">{{ r.comment or '—' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Giáo viên chưa công bố kết quả nào.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Điểm học viên {{ enrollment.student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title mb-1">{{ enrollment.student.full_name }}</h4>
+    <p class="page-sub mb-0">
+      Mã học viên: {{ enrollment.student.code or '—' }} · Lớp {{ classroom.code }}
+    </p>
+  </div>
+  <a href="{{ url_for('teacher.class_detail', class_id=classroom.id) }}" class="btn btn-light">
+    ← Danh sách học viên
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-value">{{ enrollment.student.entry_band if enrollment.student.entry_band is not none else '—' }}</div>
+      <div class="stat-label">Band đầu vào</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card accent">
+      {% set latest = enrollment.latest_score %}
+      <div class="stat-value">{{ latest.overall if latest and latest.overall is not none else '—' }}</div>
+      <div class="stat-label">Overall gần nhất</div>
+    </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stat-card green">
+      <div class="stat-value">{{ enrollment.status_label }}</div>
+      <div class="stat-label">Trạng thái học viên</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><i class="bi bi-journal-check"></i> Chi tiết điểm theo giai đoạn</div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Giai đoạn</th>
+          {% for key, label in skills %}<th>{{ label }}</th>{% endfor %}
+          <th>Overall</th>
+          <th>Nhận xét</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for score in published_scores %}
+        <tr>
+          <td class="fw-semibold">{{ score.term }}</td>
+          {% for key, label in skills %}
+            <td>{{ score[key] if score[key] is not none else '—' }}</td>
+          {% endfor %}
+          <td>
+            {% if score.overall is not none %}
+              <span class="band-pill high">{{ score.overall }}</span>
+            {% else %}<span class="band-pill none">—</span>{% endif %}
+          </td>
+          <td class="small text-muted">{{ score.comment or '—' }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">Chưa có điểm nào được công bố.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<p class="uc-tag mt-3">Chỉ hiển thị điểm đã được giáo viên chốt và công bố.</p>
+{% endblock %}

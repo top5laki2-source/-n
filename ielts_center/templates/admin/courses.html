@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Quản lý khóa học{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+  <div>
+    <h4 class="page-title">Quản lý khóa học</h4>
+    <p class="page-sub mb-0">Khóa học là chương trình đào tạo, ví dụ IELTS 5.0 lên 6.5 trong 36 buổi.</p>
+  </div>
+  <a href="{{ url_for('admin.course_form') }}" class="btn btn-primary" style="background:var(--brand);border:none">
+    <i class="bi bi-plus-lg"></i> Tạo khóa học
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>Danh sách khóa học ({{ courses|length }})</span>
+    <form class="d-flex gap-2" method="get">
+      <input type="text" name="q" value="{{ keyword }}" class="form-control form-control-sm" placeholder="Tìm mã hoặc tên khóa...">
+      <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-search"></i></button>
+    </form>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Mã</th><th>Tên khóa học</th><th>Band đầu vào</th><th>Band mục tiêu</th>
+          <th>Số buổi</th><th>Học phí</th><th>Số lớp</th><th>Tuyển sinh</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in courses %}
+        <tr>
+          <td class="fw-semibold">{{ c.code }}</td>
+          <td>{{ c.name }}</td>
+          <td><span class="band-pill">{{ c.entry_band }}</span></td>
+          <td><span class="band-pill high">{{ c.target_band }}</span></td>
+          <td>{{ c.sessions }}</td>
+          <td>{{ c.tuition | vnd }}</td>
+          <td>{{ c.classes|length }}</td>
+          <td>
+            {% if c.is_open %}
+              <span class="badge bg-success">Đang tuyển</span>
+            {% else %}
+              <span class="badge bg-secondary">Ngừng tuyển</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('admin.course_form', course_id=c.id) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{{ url_for('admin.course_toggle', course_id=c.id) }}" class="d-inline"
+                  data-confirm="Đổi trạng thái tuyển sinh của khóa {{ c.code }}?">
+              <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-toggle2-{{ 'on' if c.is_open else 'off' }}"></i></button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">Chưa có khóa học nào.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
