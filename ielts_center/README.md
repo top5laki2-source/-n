@@ -164,8 +164,4 @@ mọi trang của 3 vai trò, các ràng buộc nghiệp vụ, khóa tài khoả
 
 ---
 
-## 7. Lưu ý khi nộp bài
 
-- Xóa file `instance/ielts_center.db` rồi chạy lại `python seed.py` nếu muốn dữ liệu sạch.
-- Đổi `SECRET_KEY` trong `config.py` nếu triển khai thật.
-- Mật khẩu được băm bằng `werkzeug.security` (không lưu dạng văn bản thường).
